@@ -10,7 +10,7 @@ module WebCrawler =
 
 module TrafficReportAnalisys = 
     let trafficReportUrl = "https://www.trojmiasto.pl/raport/?page={0}"
-    let mainReportElementCssSelector = ".report-content-inner"
+    let mainReportElementCssSelector = ".report-item"
     let timeElementCssSelector = ".time"
     let authorElementCssSelector = ".author-not-linked"
     let titleElementCssSelector = "h3 a"
@@ -47,17 +47,27 @@ module TrafficReportAnalisys =
         let list = new List<HtmlDocument>()
         for i in 0..number do
             String.Format(trafficReportUrl, i)
-                |> HtmlDocument.AsyncLoad
+                |> WebCrawler.GetHtmlDocumentAsync
+                |> Async.StartAsTask
+                |> Async.AwaitTask
                 |> Async.RunSynchronously
                 |> list.Add
         list
 
-    let analizeTrafficReports = 
-        Seq.collect (toReportHtmlElements >> Seq.map toTrafficReport) (getHtmlDocuments 10)
+    let analyzeTrafficReports = 
+        Seq.collect (toReportHtmlElements >> Seq.map toTrafficReport) (getHtmlDocuments 100)
 
+module FileService = 
+    let saveToFile (filePath:string) (data: seq<string>) = 
+        use streamWriter = new System.IO.StreamWriter(filePath)
+        data 
+        |> Seq.iter streamWriter.WriteLine
 
 [<EntryPoint>]
 let main argv =
-    TrafficReportAnalisys.analizeTrafficReports
-        |> Seq.iter (fun element -> printfn "%s" (JsonConvert.SerializeObject element))
+    printf "Starting analysis"
+    TrafficReportAnalisys.analyzeTrafficReports
+        |> Seq.map JsonConvert.SerializeObject
+        |> FileService.saveToFile "output.json"
+    printfn "Finished"
     0
