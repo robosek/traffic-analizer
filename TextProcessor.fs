@@ -1,0 +1,25 @@
+namespace traffic_report_crawler
+
+open System
+open System.Net
+open FSharp.Data
+open Newtonsoft.Json
+open System.Collections.Generic
+open System.IO
+open traffic_report_crawler.WebCrawler
+
+module TextProcessor =
+    let private stopWords = File.ReadAllLines "stop_words.txt"
+    let private punctationMarks = [|":";".";";";"/";"'";"";" ";"  ";"-"|]
+    let private notInArray (word: string) = Seq.contains word >> not
+    let notInStopWords word = notInArray word stopWords
+    let notInPunctationMarks word = notInArray word punctationMarks
+
+    let countWords (mappedWords: seq<string*int>) =
+        let countedWords = new System.Collections.Generic.Dictionary<string,int>()
+        mappedWords
+        |> Seq.iter (fun (word, number) -> if countedWords.ContainsKey word then 
+                                            countedWords.[word] <- countedWords.[word] + 1 
+                                           else 
+                                             countedWords.[word] <- number) 
+        countedWords :> seq<_> |> Seq.map (|KeyValue|)
