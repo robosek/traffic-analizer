@@ -1,17 +1,17 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.0</TargetFramework>
   </PropertyGroup>
-
   <ItemGroup>
+    <Compile Include="WebCrawler.fs" />
+    <Compile Include="TrafficReportProcessor.fs" />
+    <Compile Include="FileService.fs" />
+    <Compile Include="TextProcessor.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="FSharp.Data" Version="2.4.6" />
     <PackageReference Include="RestEase" Version="1.4.5" />
   </ItemGroup>
-
 </Project>
