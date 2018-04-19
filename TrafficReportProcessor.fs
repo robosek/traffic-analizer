@@ -1,12 +1,10 @@
 namespace traffic_report_crawler
 
 open System
-open System.Net
 open FSharp.Data
-open Newtonsoft.Json
 open System.Collections.Generic
-open System.IO
 open traffic_report_crawler.WebCrawler
+open System
 
 module TrafficReportProcessor = 
     let trafficReportUrl = "https://www.trojmiasto.pl/raport/?page={0}"
@@ -44,15 +42,20 @@ module TrafficReportProcessor =
         { author = reportAuthor; title = reportTitle; time = reportTime }
 
     let getHtmlDocuments number = 
-        let list = new List<HtmlDocument>()
-        for i in 0..number do
-            String.Format(trafficReportUrl, i)
-                |> GetHtmlDocumentAsync
-                |> Async.StartAsTask
-                |> Async.AwaitTask
-                |> Async.RunSynchronously
-                |> list.Add
-        list
+        try
+            let resultList = new List<HtmlDocument>()
+            let asyncOperations = [for i in 0..number do yield (GetHtmlDocumentAsync (String.Format(trafficReportUrl, i)))]
+            asyncOperations
+            |> Async.Parallel
+            |> Async.RunSynchronously
+            |> Seq.iter resultList.Add
+
+            Ok resultList
+        with
+        | ex -> Error ("Some error occured during server connection: " + ex.Message)
 
     let analyzeTrafficReports number =
-        Seq.collect (toReportHtmlElements >> Seq.map toTrafficReport) (getHtmlDocuments number)
+        let resultHtmlDocuments = getHtmlDocuments number
+        match resultHtmlDocuments with
+        | Ok htmlDocuments-> Ok (Seq.collect (toReportHtmlElements >> Seq.map toTrafficReport) htmlDocuments)
+        | Error error -> Error error
