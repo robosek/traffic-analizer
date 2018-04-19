@@ -1,12 +1,7 @@
 namespace traffic_report_crawler
 
-open System
-open System.Net
-open FSharp.Data
-open Newtonsoft.Json
 open System.Collections.Generic
 open System.IO
-open traffic_report_crawler.WebCrawler
 
 module TextProcessor =
     let private stopWords = File.ReadAllLines "stop_words.txt"
