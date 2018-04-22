@@ -4,9 +4,11 @@ open traffic_report_crawler.TrafficReportProcessor
 
 [<EntryPoint>]
 let main argv =
-    let reportsNumber = 100
-
+    let reportsNumber = 1000
+ 
     printfn "Starting..."
+    let stopWatch = System.Diagnostics.Stopwatch.StartNew()
+
     let resultReports = analyzeTrafficReports reportsNumber
     match resultReports with
     | Ok reports -> (Seq.collect (fun (report) -> report.title.Split(" ")) reports)
@@ -18,5 +20,7 @@ let main argv =
                     |> Seq.map (fun (word, number) -> sprintf "%s: %d" word number)
                     |> saveToFile "output.json"
     | Error error -> printfn "%s" error
-    printfn "Finished"
+
+    stopWatch.Stop()
+    printfn "Finished. Time elapsed: %d:%d:%d" stopWatch.Elapsed.Minutes stopWatch.Elapsed.Seconds stopWatch.Elapsed.Milliseconds
     0
