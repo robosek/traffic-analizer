@@ -4,4 +4,7 @@ module FileService =
     let saveToFile (filePath:string) (data: seq<string>) = 
         use streamWriter = new System.IO.StreamWriter(filePath)
         data
-        |> Seq.iter (streamWriter.WriteLineAsync >> Async.AwaitTask >> Async.RunSynchronously)
+        |> String.concat "\n"
+        |> streamWriter.WriteAsync
+        |> Async.AwaitTask
+        |> Async.RunSynchronously
