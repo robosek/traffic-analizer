@@ -6,7 +6,7 @@ open System.IO
 module TextProcessor =
     let private stopWords = File.ReadAllLines "stop_words.txt"
     let private punctationMarks = [|":";".";";";"/";"'";"";" ";"  ";"-"|]
-    let private notInArray (word: string) = Seq.contains word >> not
+    let private notInArray (word: string) = Seq.contains (word.ToLower()) >> not
     let notInStopWords word = notInArray word stopWords
     let notInPunctationMarks word = notInArray word punctationMarks
 
