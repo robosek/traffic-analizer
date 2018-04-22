@@ -44,11 +44,13 @@ module TrafficReportProcessor =
     let getHtmlDocuments number = 
         try
             let resultList = new List<HtmlDocument>()
-            let asyncOperations = [for i in 0..number do yield (GetHtmlDocumentAsync (String.Format(trafficReportUrl, i)))]
+            let asyncOperations =
+                [for i in 0..number do yield (GetHtmlDocumentAsync (String.Format(trafficReportUrl, i)))] 
+                |> Seq.chunkBySize 5 //trojmiasto.pl returns 429 Too Many Requests if chunk size is too big.
+
             asyncOperations
-            |> Async.Parallel
-            |> Async.RunSynchronously
-            |> Seq.iter resultList.Add
+            |> Seq.iter (fun documentsAsync -> (Async.Parallel  documentsAsync |> Async.RunSynchronously |> Seq.iter resultList.Add)) 
+
 
             Ok resultList
         with
@@ -56,6 +58,7 @@ module TrafficReportProcessor =
 
     let analyzeTrafficReports number =
         let resultHtmlDocuments = getHtmlDocuments number
+
         match resultHtmlDocuments with
         | Ok htmlDocuments-> Ok (Seq.collect (toReportHtmlElements >> Seq.map toTrafficReport) htmlDocuments)
         | Error error -> Error error
